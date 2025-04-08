@@ -3,74 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>YouTube Clone</title>
     <style>
-        #container{
-            display:grid;
-            grid-template-columns: repeat(4,1fr);
-            grid-gap:30px;
-        }
+    
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0f0f0f;
+      color: #ffffff;
+    }
 
-    </style>
+    header {
+      background-color: #181818;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      color: red;
+      margin: 0;
+    }
+
+    header input {
+      padding: 10px;
+      width: 300px;
+      border: none;
+      border-radius: 20px;
+      outline: none;
+    }
+
+    header button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      border: none;
+      background-color: #303030;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    #container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .video {
+      background-color: #181818;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+
+    .video:hover {
+      transform: scale(1.03);
+    }
+
+    .video img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .video h3 {
+      padding: 10px;
+      font-size: 16px;
+      color: #ffffff;
+    }
+  </style>
 </head>
 <body>
-    <h1>ES6 classes</h1>
-    <input type="text" id="query" placeholder="Enter Your Query">
-    <button  onclick="search()">Submit</button>
-    <button onclick="sort()">Sort</button>
+    <header>
+        <h1>YouTube Clone</h1>
+        <div id="search-area">
+            <input type="text" id="query" placeholder="Search videos">
+            <button onclick="search()">Search</button>
+            <button onclick="sort()">Sort</button>
+        </div>
+    </header>
     <div id="container"></div>
+
+    <script>
+        let q = '';
+        const key = "AIzaSyA3m9NpuSb9_cHZMCgpIJ-cFl7KDkfVdUA";
+
+        const search = async () => {
+            let query = document.getElementById("query").value;
+            let data = await getData(query);
+            q = query;
+            append(data);
+        };
+
+        const getData = async (query) => {
+            let url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=${query}&key=${key}`;
+            let res = await fetch(url);
+            let data = await res.json();
+            return data.items;
+        };
+
+        const append = (data) => {
+            let box = document.getElementById("container");
+            box.innerHTML = null;
+            data.forEach((el) => {
+                let img = document.createElement('img');
+                img.src = el.snippet.thumbnails.medium.url;
+                let h3 = document.createElement('h3');
+                h3.innerText = el.snippet.title;
+
+                let div = document.createElement('div');
+                div.setAttribute('class','video');
+                div.onclick = () => {
+                    save(el);
+                }
+                div.append(img, h3);
+                box.append(div);
+            });
+        };
+
+        const save = (data) => {
+            localStorage.setItem('video', JSON.stringify(data));
+            window.location.href = "video.html";
+        };
+
+        const sort = async () => {
+            let data = await getData(q);
+            data = data.filter((el) => el.snippet.channelId === "UCyoXW-Dse7fURq30EWl_CUA");
+            append(data);
+        };
+    </script>
 </body>
 </html>
-<script>
-    //AIzaSyA3m9NpuSb9_cHZMCgpIJ-cFl7KDkfVdUA
-    //https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=kgf&key=[YOUR_API_KEY]
-     
-    let q = '';
-    const key = "AIzaSyA3m9NpuSb9_cHZMCgpIJ-cFl7KDkfVdUA";
-     let search =async ()=>{
-       let query = document.getElementById("query").value;
-       let data = await getData(query);
-       q = query;
-       append(data)
-     }
-     let getData = async (query)=>{
-        let url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q=${query}&key=${key}`
-        let res = await fetch(url);
-        let data = await res.json();
-        console.log(data.items);
-        return data.items;
-       
-        
-     }
-     let append = (data) =>{
-        let box = document.getElementById("container")
-        box.innerHTML=null;
-        data.forEach((el) => {
-            //snippet --->title
-            //snippet ===> thumbnails ----> medium --->url
-            let img = document.createElement('img')
-            img.src = el.snippet.thumbnails.medium.url;
-            let h3 = document.createElement('h3');
-            h3.innerText = el.snippet.title;
-
-            let div = document.createElement('div');
-            div.setAttribute('class','video');
-            div.onclick = ()=>{
-                save(el);
-            }
-            div.append(img,h3);
-            box.append(div)
-        });
-     }
-     let save = (data) =>{
-        localStorage.setItem('video',JSON.stringify(data));
-        window.location.href = "video.html";
-     }
-     let sort = async()=>{
-       let data = await getData(q);
-       data = data.filter((el)=>{
-        return (el.snippet.channelId === "UCyoXW-Dse7fURq30EWl_CUA");
-       })
-       append(data);
-     }
-</script>
